@@ -5,7 +5,19 @@ import { DevTool } from "@hookform/devtools";
 
 export const YouTubeForm = () => {
   //add useForm hook to manage form state
-  const form = useForm();
+  //default values can be added at this point in the object, if needed, example below. Also, by including this object the data can be formatted, even to make nested object. Arrays can also be specified.
+  const form = useForm({
+    defaultValues: {
+      username: "Sonic Hedgehog",
+      email: "",
+      channel: "",
+      social: {
+        twitter: "",
+        facebook: "",
+      },
+      phoneNumber: ["", ""],
+    },
+  });
 
   //destructure to bring out register
   const { register, control, handleSubmit, formState } = form;
@@ -22,12 +34,14 @@ export const YouTubeForm = () => {
 
   //Is It Working?:  to verify state is being managed, install devtools with npm install -D @hookform/devtools.  Import DevTool and add component after form. Destructure the control from the form constant, then add this control as a prop to the DevTool component. This component will create a clickable icon on the browser page which will show that form state is being tracked properly.
 
-  //Submitting Data:  Now, we can unpack a handleSubmit function from the form object. Create a onSubmit function to send of the form data package (data), and then add this to the form tag with onSubmit={handleSubmit(onSubmit)}. Notice how data is just fired off as a object of key:values. making it perfect for using to fetch and post to apis.
+  //Submitting Data:  Now, we can unpack a handleSubmit function from the form object. Create a onSubmit function to send of the form data package (data), and then add this to the form tag with onSubmit={handleSubmit(onSubmit)}. Notice how data is just fired off as a object of key:values. making it perfect for using to fetch and post to apis within the onSubmit function.
 
   //Form Validation:  covered is required, minLength and maxLength, min and max, pattern. Add noValidate to form tag (blocks browser validation). for required, add {required: 'Username is required'} to the ...register part.  For email we add an object {pattern:{value:"email regex", message:'proper email require'}} which will validate good email address. The required validation, for posterity, can be set up as an object as well: {required:{value: true, message: 'username required'}}
 
   //Getting validation error messages to user:  destructure formState from form.  This contains a lot of info.  We can destructure the errors out of this object by const {errors}= formState.  we can show errors in a tag {errors.username?.message} the question mark (option chaining) is required.
   //Custom validation:  What if a particular email, etc,etc needs to be excluded?  Add validate function next to pattern object. It has a function that accepts fieldValue.  validate: (fieldValue)=>{ return (fieldvalue !== "forbidden.ex@email.com" || "Enter a different Email")}.  This is example is a security measure to prevent a admin login attempt by using default admin email addresses. validate can also be an object with key value pairs which define conditions.  we can add for example: notBlackListed: (fieldValue)=>{ return (!fieldValue.endsWith("baddomain.com")||"This domain not supported")}
+
+  //Three pillars of FORMS: form state management, for submission, form validation
 
   const onSubmit = (data) => {
     console.log("forms submittee", data);
@@ -62,16 +76,17 @@ export const YouTubeForm = () => {
                   "Enter a different email address!"
                 );
               },
-              notBlackListed: (fieldValue)=>{
-                return(
-                  !fieldValue.endsWith("baddomain.com")||"This domain is not supported"
-                )
-              }
+              notBlackListed: (fieldValue) => {
+                return (
+                  !fieldValue.endsWith("baddomain.com") ||
+                  "This domain is not supported"
+                );
+              },
             },
           })}
         />
         <p>{errors.email?.message}</p>
-        <label htmlFor="channel">Channel</label>
+        <label htmlFor="channel">YouTube Channel</label>
         <input
           type="text"
           id="channel"
@@ -83,7 +98,33 @@ export const YouTubeForm = () => {
           })}
         />
         <p>{errors.channel?.message}</p>
+
+        <label htmlFor="twitter">Twitter</label>
+        <input type="text" id="twitter" {...register("social.twitter")} />
+
+        <label htmlFor="facebook">FaceBook</label>
+        <input type="text" id="facebook" {...register("social.facebook",{
+          required:{
+            value: true,
+            message: 'Need a facebook profile'
+          }})
+        } />
+        <p>{errors.social?.facebook.message}</p>
+
+        <label htmlFor="primary-phone">Primary Phone Number</label>
+        <input type="text" id="primary-phone" {...register("phoneNumber.0",{
+          required:{
+            value: true,
+            message: 'Need a primary phone'
+          }})} />
+           <p>{errors.phoneNumber?.[0]?.message}</p>
+
+        <label htmlFor="cell-phone">Cel Phone Number</label>
+        <input type="text" id="cell-phone" {...register("phoneNumber.1")} />
+       
+
         <button>Submit</button>
+
       </form>
       <DevTool control={control} />
     </div>
